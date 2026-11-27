@@ -2,12 +2,14 @@
 // the turkey, the chasing farmer, ovens and carving knives, the HUD and the
 // title / pause / end screens. No images, no fonts loaded from anywhere.
 import {
+  CHASE_READ,
   ESCAPE_DISTANCE_M,
   FARMER_DANGER_GAP_M,
   FARMER_START_GAP_M,
   FIELD,
   FONT,
   FONT_DISPLAY,
+  HUD_READ,
   PALETTE,
   TURKEY,
   TURKEY_X,
@@ -418,13 +420,14 @@ export function createRenderer(canvas) {
     ctx.restore();
   }
 
-  function drawFarmer(state, x, runPhase) {
+  function drawFarmer(state, x, runPhase, scale = 1) {
     const bob = Math.abs(Math.sin(runPhase)) * 4;
     ctx.save();
     ctx.translate(x, FIELD.groundY - bob);
-    // Shadow.
+    // Shadow stays on the ground, sized to the farmer.
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ellipse(ctx, 0, bob, 40, 7);
+    ellipse(ctx, 0, bob, 40 * scale, 7 * scale);
+    ctx.scale(scale, scale);
     const swing = Math.sin(runPhase) * 16;
     // Legs (overalls) + boots.
     ctx.strokeStyle = PALETTE.farmerOveralls;
@@ -532,20 +535,20 @@ export function createRenderer(canvas) {
   function drawHud(state, best, bestDistance) {
     const dist = Math.floor(state.distanceM);
     ctx.fillStyle = PALETTE.panel;
-    roundRect(ctx, 16, 12, FIELD.width - 32, 66, 12);
+    roundRect(ctx, 16, 12, FIELD.width - 32, 76, 12);
     ctx.fill();
     ctx.strokeStyle = PALETTE.panelEdge;
     ctx.lineWidth = 2;
-    roundRect(ctx, 16, 12, FIELD.width - 32, 66, 12);
+    roundRect(ctx, 16, 12, FIELD.width - 32, 76, 12);
     ctx.stroke();
     // Score, left.
-    text(ctx, 'SCORE', 36, 30, 15, PALETTE.muted, 'left', 800);
-    text(ctx, String(Math.floor(state.score)), 36, 58, 30, PALETTE.text, 'left', 900);
+    text(ctx, 'SCORE', 36, 30, 16, PALETTE.muted, 'left', 800);
+    text(ctx, String(Math.floor(state.score)), 36, 60, HUD_READ.scoreSize, PALETTE.text, 'left', 900);
     // Distance progress, centre: turkey dot runs toward the barn flag.
     const barX = 300;
     const barW = 620;
-    const barY = 34;
-    text(ctx, 'TO THE FOREST GATE', barX + barW / 2, 26, 13, PALETTE.muted, 'center', 800);
+    const barY = 38;
+    text(ctx, 'TO THE FOREST GATE', barX + barW / 2, 28, 14, PALETTE.muted, 'center', 800);
     ctx.fillStyle = 'rgba(255,255,255,0.18)';
     roundRect(ctx, barX, barY, barW, 16, 8);
     ctx.fill();
@@ -574,27 +577,27 @@ export function createRenderer(canvas) {
     ellipse(ctx, dotX, barY + 8, 10, 8);
     ctx.fillStyle = PALETTE.turkeyHead;
     ellipse(ctx, dotX + 8, barY + 2, 5, 5);
-    text(ctx, `${dist}m / ${ESCAPE_DISTANCE_M}m`, barX + barW / 2, 66, 15, PALETTE.text, 'center', 800);
+    text(ctx, `${dist}m / ${ESCAPE_DISTANCE_M}m`, barX + barW / 2, 72, HUD_READ.distSize, PALETTE.text, 'center', 800);
     // Corn + best, right.
-    text(ctx, 'CORN', 1000, 30, 15, PALETTE.muted, 'left', 800);
-    text(ctx, `x${state.corn}`, 1000, 58, 26, PALETTE.corn, 'left', 900);
-    text(ctx, 'BEST', 1120, 30, 15, PALETTE.muted, 'left', 800);
-    text(ctx, String(best), 1120, 58, 26, PALETTE.text, 'left', 900);
+    text(ctx, 'CORN', 1000, 30, 16, PALETTE.muted, 'left', 800);
+    text(ctx, `x${state.corn}`, 1000, 60, HUD_READ.valueSize, PALETTE.corn, 'left', 900);
+    text(ctx, 'BEST', 1120, 30, 16, PALETTE.muted, 'left', 800);
+    text(ctx, String(best), 1120, 60, HUD_READ.valueSize, PALETTE.text, 'left', 900);
     // Farmer gap bar, under the HUD: red when he closes in.
     const gapW = 260;
     const gapX = FIELD.width - gapW - 16;
-    const gapY = 88;
+    const gapY = 98;
     const gapFrac = state.farmerGapM / FARMER_START_GAP_M;
     ctx.fillStyle = 'rgba(24, 12, 32, 0.7)';
-    roundRect(ctx, gapX, gapY, gapW, 26, 8);
+    roundRect(ctx, gapX, gapY, gapW, 30, 8);
     ctx.fill();
     ctx.fillStyle = gapFrac < 0.3 ? PALETTE.danger : '#f2a541';
-    roundRect(ctx, gapX + 3, gapY + 3, Math.max(8, (gapW - 6) * gapFrac), 20, 6);
+    roundRect(ctx, gapX + 3, gapY + 3, Math.max(8, (gapW - 6) * gapFrac), 24, 6);
     ctx.fill();
-    text(ctx, `FARMER ${Math.ceil(state.farmerGapM)}m BEHIND`, gapX + gapW / 2, gapY + 13, 13, PALETTE.text, 'center', 900);
+    text(ctx, `FARMER ${Math.ceil(state.farmerGapM)}m BEHIND`, gapX + gapW / 2, gapY + 15, HUD_READ.gapTextSize, PALETTE.text, 'center', 900);
     if (state.farmerGapM <= FARMER_DANGER_GAP_M && state.running && !state.over) {
       const pulse = 0.55 + Math.sin(state.time * 8) * 0.45;
-      outlinedText(ctx, 'THE FARMER IS CLOSE!', FIELD.width / 2, 130, 30, `rgba(255,77,61,${pulse})`, '#2e0a06');
+      outlinedText(ctx, 'THE FARMER IS CLOSE!', FIELD.width / 2, 142, HUD_READ.warningSize, `rgba(255,77,61,${pulse})`, '#2e0a06');
     }
   }
 
@@ -693,11 +696,14 @@ export function createRenderer(canvas) {
     // The farmer chases from the left; the turkey runs at its fixed x.
     // On the title screen the big title turkey and farmer take their place,
     // so the in-world pair is hidden there and never doubles up.
+    // V2: both are drawn ~1.9x, and the farmer stays visible in-frame while
+    // he trails, closing in as the gap shrinks — the chase must read at 320px.
+    // (The old mapping put him off-screen left until the gap fell under 37m.)
     if (screen !== SCREEN_TITLE) {
-      const farmerX = TURKEY_X - 78 - state.farmerGapM * 6;
-      drawFarmer(state, farmerX, state.turkey.runPhase);
+      const farmerX = CHASE_READ.farmerX0 + (FARMER_START_GAP_M - state.farmerGapM) * CHASE_READ.farmerPxPerMetre;
+      drawFarmer(state, farmerX, state.turkey.runPhase, CHASE_READ.farmerScale);
       const blink = state.turkey.invulnerable > 0 && Math.floor(state.time * 14) % 2 === 0;
-      drawTurkey(state, state.turkey.x + 48, state.turkey.y, 1, state.turkey.runPhase, state.turkey.squash, blink ? 0.45 : 1);
+      drawTurkey(state, state.turkey.x + 48, state.turkey.y, CHASE_READ.turkeyScale, state.turkey.runPhase, state.turkey.squash, blink ? 0.45 : 1);
     }
     drawParticles(state);
     if (screen === SCREEN_PLAY || screen === SCREEN_PAUSED) drawHud(state, best, bestDistance);
