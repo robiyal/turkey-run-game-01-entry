@@ -35,6 +35,21 @@ export const TURKEY = {
   stumbleSeconds: 0.55,
 };
 
+/** V2 — chase readability at the judged size (320px). Visual only: the
+ *  rules, the hitboxes and the farmer's gap mechanics are untouched. The
+ *  turkey and the farmer are drawn bigger and the farmer is kept in-frame,
+ *  so the chase reads as a chase when the screenshot is shrunk. */
+export const CHASE_READ = {
+  /** In-play draw scale for the turkey (was 1; the title and end screens already drew it at 1.9). */
+  turkeyScale: 1.9,
+  /** In-play draw scale for the farmer (was 1, a fixed size). */
+  farmerScale: 1.9,
+  /** Farmer screen x while the gap is at its start (42m): left third, fully in frame. */
+  farmerX0: 120,
+  /** Pixels the farmer visibly closes for each metre the gap shrinks. */
+  farmerPxPerMetre: 2.7,
+};
+
 export const RUN = {
   baseSpeed: 400,
   speedPerMetre: 0.32,
@@ -125,6 +140,15 @@ export const PALETTE = {
 
 export const FONT = '"Trebuchet MS", "Segoe UI", system-ui, sans-serif';
 export const FONT_DISPLAY = '"Trebuchet MS", "Segoe UI", system-ui, sans-serif';
+
+/** V2 — HUD and warning text sized to read at 320px (was 13–30px, noise when shrunk). */
+export const HUD_READ = {
+  scoreSize: 36,
+  valueSize: 32,
+  gapTextSize: 18,
+  distSize: 19,
+  warningSize: 48,
+};
 
 /** Where the best score is kept between visits (this browser only). */
 export const BEST_KEY = 'gobble-run.best';
