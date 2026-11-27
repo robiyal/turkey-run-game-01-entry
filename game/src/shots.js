@@ -66,11 +66,12 @@ export function stageShot(name, world) {
       state.farmerGapM = Math.min(state.farmerGapM, 7);
       // Freeze on a tense grounded frame: the turkey about to jump an
       // obstacle with the farmer right behind it, never mid-double-jump
-      // high in the sky.
+      // high in the sky. (V2: window widened a touch — the bigger turkey
+      // reads better with the obstacle a step further out.)
       const next = nearestObstacleAhead(state);
       if (next && state.turkey.grounded) {
         const gapPx = next.x - (state.turkey.x + 96);
-        if (gapPx < 320 && gapPx > 120) break;
+        if (gapPx < 340 && gapPx > 140) break;
       }
     }
     if (state.over) {
@@ -85,7 +86,7 @@ export function stageShot(name, world) {
         const next = nearestObstacleAhead(state);
         if (next && state.turkey.grounded) {
           const gapPx = next.x - (state.turkey.x + 96);
-          if (gapPx < 320 && gapPx > 120) break;
+          if (gapPx < 340 && gapPx > 140) break;
         }
       }
     }
@@ -96,6 +97,16 @@ export function stageShot(name, world) {
   for (let i = 0; i < limit / STEP; i += 1) {
     const events = world.step(STEP, autopilot(state, reaction), false);
     if (events & EVENT_OVER) break;
+    if (name === 'play' && state.distanceM > 100) {
+      // V2: freeze on a live action frame — the turkey grounded with an
+      // obstacle just ahead and the farmer in-frame behind it — so the
+      // play shot shows the chase, not an empty stretch of field.
+      const next = nearestObstacleAhead(state);
+      if (next && state.turkey.grounded) {
+        const gapPx = next.x - (state.turkey.x + 96);
+        if (gapPx < 350 && gapPx > 150) break;
+      }
+    }
   }
   const over = state.over;
   return {
